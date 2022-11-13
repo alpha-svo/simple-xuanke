@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StudentMapper">
+    <select id="selectCoursesByStuid" resultType="course">
+        SELECT c.courseid, c.course, c.fromdep, c.teacher, c.duration
+        FROM tb_student_course j
+                 INNER JOIN tb_course c ON
+            j.courseid = c.courseid
+        WHERE j.stuid = #{stuid}
+    </select>
+    <select id="selectStudentCourseByStuid" resultMap="xxx">
+        select *
+        from tb_student
+        where stuid = #{stuid}
+    </select>
+
+    <resultMap id="xxx" type="student">
+        <id property="stuid" column="stuid"/>
+        <result property="number" column="number"/>
+        <result property="stuname" column="stuname"/>
+        <result property="stugrade" column="stugrade"/>
+        <result property="stugender" column="stugender"/>
+        <result property="studep" column="studep"/>
+        <result property="stuclass" column="stuclass"/>
+        <collection property="courses" ofType="course" column="stuid" select="selectCoursesByStuid">
+        </collection>
+    </resultMap>
+</mapper>
