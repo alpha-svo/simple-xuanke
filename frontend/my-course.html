@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>已选课程</title>
+    <meta
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+      name="viewport"
+    />
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="./plugins/elementui/index.css" />
+    <link
+      rel="stylesheet"
+      href="./plugins/font-awesome/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+
+  <body class="hold-transition">
+    <div id="app">
+      <el-table
+        ref="multipleTable"
+        :data="tableData"
+        tooltip-effect="dark"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55"> </el-table-column>
+        <el-table-column prop="courseid" label="课程ID"> </el-table-column>
+        <el-table-column prop="course" label="课程"> </el-table-column>
+        <el-table-column prop="fromdep" label="开设院系"> </el-table-column>
+        <el-table-column prop="teacher" label="授课教师"> </el-table-column>
+        <el-table-column prop="duration" label="节次"> </el-table-column>
+      </el-table>
+      <div style="margin-top: 20px">
+        <el-button @click="toggleSelection()">取消选择</el-button>
+        <el-button type="primary" @click="handleSubmitCourse()">退选</el-button>
+      </div>
+    </div>
+  </body>
+
+  <!-- 引入组件库 -->
+  <script src="./js/vue.js"></script>
+  <script src="./plugins/elementui/index.js"></script>
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script src="./js/axios-0.18.0.js"></script>
+  <script>
+    // axios.defaults.headers.common["token"] = localStorage.getItem("token");
+    var vue = new Vue({
+      el: "#app",
+      data: {
+        tableData: [],
+      },
+      //useEffect
+      created() {
+        // this.chk();
+        this.fetchData();
+      },
+      //方法
+      methods: {
+        //验证token
+        // chk() {
+        //   token = localStorage.getItem("token");
+        //   if (token == null || token == "") {
+        //     window.location.href = "login.html";
+        //   } else {
+        //     axios
+        //       .get(`http://localhost:8866/auth/verify?token=${token}`)
+        //       .then((res) => {
+        //         if (res.data.code == 1) {
+        //           window.location.href = "login.html";
+        //         }
+        //       });
+        //   }
+        // },
+        //获取全部课程
+        fetchData() {
+          axios
+            .get(`http://localhost:8866/student/my-courses/1`)
+            .then((res) => {
+              this.tableData = res.data.data;
+            })
+            .catch((err) => {
+              alert(err);
+            });
+        },
+        //选课功能
+        toggleSelection(rows) {
+          if (rows) {
+            rows.forEach((row) => {
+              this.$refs.multipleTable.toggleRowSelection(row);
+            });
+          } else {
+            this.$refs.multipleTable.clearSelection();
+          }
+        },
+        handleSelectionChange(val) {
+          this.multipleSelection = val;
+        },
+        handleSubmitCourse() {
+          if (this.multipleSelection || [].length !== 0) {
+            alert(`计划退选${JSON.stringify(this.multipleSelection)}`);
+          } else {
+            alert(`请选择课程后提交！`);
+          }
+        },
+      },
+    });
+  </script>
+</html>

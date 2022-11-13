@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>选课中心</title>
+    <meta
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+      name="viewport"
+    />
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="./plugins/elementui/index.css" />
+    <link
+      rel="stylesheet"
+      href="./plugins/font-awesome/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+
+  <body class="hold-transition">
+    <div id="app">
+      <div class="filter-container">
+        <el-input
+          placeholder="课程名称"
+          v-model="search.course"
+          style="width: 200px"
+          class="filter-item"
+        ></el-input>
+        <!-- <el-input
+          placeholder="开设院系"
+          v-model="search.fromdep"
+          style="width: 200px"
+          class="filter-item"
+        ></el-input> -->
+        <el-select v-model="search.fromdep" placeholder="开设院系">
+          <el-option
+            v-for="item in deps"
+            :key="item.depid"
+            :value="item.depid"
+            :label="item.department"
+          ></el-option>
+        </el-select>
+        <el-button @click="fetchData()" type="primary">搜索</el-button>
+        <el-button @click="refresh()" type="primary">重置</el-button>
+        <el-switch
+          v-model="filter"
+          active-color="#13ce66"
+          inactive-color="#ff4949"
+          @click.native.prevent="enableFilter"
+        >
+        </el-switch>
+        过滤冲突课程
+      </div>
+
+      <el-table
+        ref="multipleTable"
+        :data="tableData"
+        tooltip-effect="dark"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55"> </el-table-column>
+        <el-table-column prop="courseid" label="课程ID"> </el-table-column>
+        <el-table-column prop="course" label="课程"> </el-table-column>
+        <el-table-column prop="fromdep" label="开设院系"> </el-table-column>
+        <el-table-column prop="teacher" label="授课教师"> </el-table-column>
+        <el-table-column prop="stock" label="余量"> </el-table-column>
+      </el-table>
+      <div style="margin-top: 20px">
+        <!-- <el-button @click="toggleSelection([tableData[1], tableData[2]])"
+          >切换第二、第三行的选中状态</el-button
+        > -->
+        <el-button @click="toggleSelection()">取消选择</el-button>
+        <el-button type="primary" @click="handleSubmitCourse()"
+          >提交选课</el-button
+        >
+        <!-- <el-button type="primary" @click="gotoMyTable()"
+          >前往“我的课表”</el-button
+        > -->
+      </div>
+      <!-- 分页 -->
+      <div style="text-align: center">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="page.page"
+          :page-sizes="[5, 10]"
+          :page-size="page.limit"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="page.total"
+        >
+        </el-pagination>
+      </div>
+      注意：开启过滤后页面条数会有变化
+    </div>
+  </body>
+
+  <!-- 引入组件库 -->
+  <script src="./js/vue.js"></script>
+  <script src="./plugins/elementui/index.js"></script>
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script src="./js/axios-0.18.0.js"></script>
+  <script>
+    // axios.defaults.headers.common["token"] = localStorage.getItem("token");
+    var vue = new Vue({
+      el: "#app",
+      data: {
+        tableData: [],
+        page: {
+          page: 1,
+          limit: 5,
+          total: 0,
+        },
+        search: {
+          course: "",
+          fromdep: "",
+        },
+        deps: [],
+        // 过滤冲突课程
+        filter: false,
+      },
+      //useEffect
+      created() {
+        // this.chk();
+        this.fetchData();
+        this.fetchDep();
+      },
+      //方法
+      methods: {
+        //验证token
+        // chk() {
+        //   token = localStorage.getItem("token");
+        //   if (token == null || token == "") {
+        //     window.location.href = "login.html";
+        //   } else {
+        //     axios
+        //       .get(`http://localhost:8866/auth/verify?token=${token}`)
+        //       .then((res) => {
+        //         if (res.data.code == 1) {
+        //           window.location.href = "login.html";
+        //         }
+        //       });
+        //   }
+        // },
+        //获取院系
+        fetchDep() {
+          axios
+            .get(`http://localhost:8866/course/department`)
+            .then((res) => {
+              this.deps = res.data.data;
+            })
+            .catch((err) => {
+              alert(err);
+            });
+        },
+        //获取全部课程
+        fetchData() {
+          course = `course=${this.search.course}&fromdep=${this.search.fromdep}`;
+          page = `page=${this.page.page}&limit=${this.page.limit}`;
+          url = "";
+          if (this.filter) {
+            url = `http://localhost:8866/student/my-courses/choose?id=1&${course}&${page}`;
+          } else {
+            url = `http://localhost:8866/course?${course}&${page}`;
+          }
+          axios
+            .get(url)
+            .then((res) => {
+              this.tableData = res.data.data;
+              this.page.total = res.data.count;
+              // console.log(`表格数据：${JSON.stringify(this.tableData)}`);
+            })
+            .catch((err) => {
+              alert(err);
+            });
+        },
+        //刷新
+        refresh() {
+          this.search.course = "";
+          this.search.fromdep = "";
+          this.cur = 1;
+          this.fetchData();
+        },
+        //开启过滤器
+        enableFilter() {
+          this.fetchData();
+        },
+        //选课功能
+        toggleSelection(rows) {
+          if (rows) {
+            rows.forEach((row) => {
+              this.$refs.multipleTable.toggleRowSelection(row);
+            });
+          } else {
+            this.$refs.multipleTable.clearSelection();
+          }
+        },
+        handleSelectionChange(val) {
+          this.multipleSelection = val;
+        },
+        handleSubmitCourse() {
+          if (this.multipleSelection || [].length !== 0) {
+            alert(`您已选课${JSON.stringify(this.multipleSelection)}`);
+          } else {
+            alert(`请选择课程后提交！`);
+          }
+        },
+        // 切换分页
+        handleSizeChange(val) {
+          this.page.limit = val;
+          this.fetchData();
+        },
+        handleCurrentChange(val) {
+          this.page.page = val;
+          this.fetchData();
+        },
+        //跳转页面
+        gotoMyTable() {
+          window.location.href = "my-table.html";
+        },
+      },
+    });
+  </script>
+</html>

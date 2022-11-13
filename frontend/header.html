@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+      name="viewport"
+    />
+    <link rel="stylesheet" href="./plugins/elementui/index.css" />
+    <link
+      rel="stylesheet"
+      href="./plugins/font-awesome/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+    <title>简易学生选课系统 1.0</title>
+  </head>
+  <body class="hold-transition">
+    <div id="app">
+      <el-tabs :tab-position="tabPosition" v-model="activeName">
+        <el-tab-pane label="选课中心" name="first">
+          <iframe src="my-choose.html" width="700px" height="500px"></iframe>
+        </el-tab-pane>
+        <el-tab-pane label="我的课表" name="second">
+          <iframe src="my-table.html" width="720px" height="500px"></iframe>
+        </el-tab-pane>
+        <el-tab-pane label="个人信息" name="third">
+          <iframe src="my-info.html" width="720px" height="500px"></iframe>
+        </el-tab-pane>
+        <el-tab-pane label="退出系统" name="fourth"> 退出 </el-tab-pane>
+      </el-tabs>
+    </div>
+  </body>
+
+  <!-- Vue组件 -->
+  <script src="./js/vue.js"></script>
+  <script src="./plugins/elementui/index.js"></script>
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script src="./js/axios-0.18.0.js"></script>
+  <script>
+    var vue = new Vue({
+      el: "#app",
+      data: { tabPosition: "left", activeName: "first" },
+      created() {},
+      methods: {
+        handleClick(tab, event) {
+          console.log(tab, event);
+        },
+      },
+    });
+  </script>
+</html>
